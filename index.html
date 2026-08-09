@@ -112,7 +112,31 @@
       </button>
     </section>
 
-    <!-- 4. Kalkulator Zakat Perniagaan -->
+    <!-- 4. Laporan Laba / Rugi (Fitur Baru) -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+      <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
+        <span>📊</span> Laporan Laba / Rugi
+      </h2>
+
+      <div class="flex gap-2 text-xs">
+        <button onclick="tampilLaporan('harian')" class="flex-1 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 py-1.5 rounded-lg border border-slate-700">Harian</button>
+        <button onclick="tampilLaporan('bulanan')" class="flex-1 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 py-1.5 rounded-lg border border-slate-700">Bulanan</button>
+        <button onclick="tampilLaporan('tahunan')" class="flex-1 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 py-1.5 rounded-lg border border-slate-700">Tahunan</button>
+      </div>
+
+      <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1.5">
+        <p class="text-slate-400">Periode: <strong id="periodeText" class="text-slate-200">Harian</strong></p>
+        <div class="flex justify-between"><span>Total Omset:</span> <strong id="lapOmset" class="text-slate-200">Rp 0</strong></div>
+        <div class="flex justify-between"><span>Total HPP (Modal):</span> <strong id="lapHpp" class="text-slate-200">Rp 0</strong></div>
+        <hr class="border-slate-800 my-1">
+        <div class="flex justify-between text-sm font-bold">
+          <span>Laba Bersih:</span>
+          <span id="lapLaba" class="text-emerald-400">Rp 0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Kalkulator Zakat Perniagaan -->
     <section class="bg-slate-900 border border-amber-500/20 rounded-2xl p-4 space-y-3">
       <div class="flex justify-between items-center">
         <h2 class="text-sm font-bold text-amber-400 flex items-center gap-1.5">
@@ -145,6 +169,7 @@
 
   <script>
     let dataBarang = JSON.parse(localStorage.getItem('dataBarang')) || [];
+    let dataTransaksi = JSON.parse(localStorage.getItem('dataTransaksi')) || [];
     let keranjang = [];
 
     function muatNamaToko() {
@@ -228,7 +253,7 @@
         select.innerHTML = `<option value="">-- Belum Ada Barang --</option>`;
         return;
       }
-      select.innerHTML = dataBarang.map(b => `<option value="${b.id}">${b.nama} (Rp ${b.jual.toLocaleString()})</option>`).join('');
+      select.innerHTML = dataBarang.map(b => `<option value="${b.id}">${b.nama} (Stok: ${b.stok}) - Rp ${b.jual.toLocaleString()}</option>`).join('');
     }
 
     function tambahKeKeranjang() {
@@ -238,8 +263,17 @@
 
       if (!item) return;
 
+      if (qty > item.stok) {
+        alert("Stok barang tidak cukup!");
+        return;
+      }
+
       const ada = keranjang.find(k => k.id === id);
       if (ada) {
+        if (ada.qty + qty > item.stok) {
+          alert("Total pembelian melebihi stok yang ada!");
+          return;
+        }
         ada.qty += qty;
       } else {
         keranjang.push({ ...item, qty });
@@ -276,21 +310,81 @@
         return;
       }
 
-      const namaToko = localStorage.getItem('namaToko') || 'Toko Kelontong';
-      let struk = `================================\n       ${namaToko.toUpperCase()}\n================================\n`;
-      let total = 0;
+      const now = new Date();
+      const tglStr = now.toISOString().split('T')[0];
+      const blnStr = tglStr.substring(0, 7);
+      const thnStr = tglStr.substring(0, 4);
 
+      let totalOmset = 0;
+      let totalHpp = 0;
+
+      // Potong Stok Barang & Hitung Omset/HPP
       keranjang.forEach(k => {
-        const sub = k.jual * k.qty;
-        total += sub;
-        struk += `${k.qty}x ${k.nama}\n   Rp ${k.jual.toLocaleString()} = Rp ${sub.toLocaleString()}\n`;
+        const subOmset = k.jual * k.qty;
+        const subHpp = k.beli * k.qty;
+        totalOmset += subOmset;
+        totalHpp += subHpp;
+
+        // Potong stok di database lokal
+        const barangAsli = dataBarang.find(b => b.id === k.id);
+        if (barangAsli) {
+          barangAsli.stok -= k.qty;
+        }
       });
 
-      struk += `--------------------------------\nTOTAL : Rp ${total.toLocaleString()}\n================================\nTerima kasih telah berbelanja!`;
+      // Simpan Transaksi
+      const transaksiBaru = {
+        id: Date.now(),
+        tanggal: tglStr,
+        bulan: blnStr,
+        tahun: thnStr,
+        omset: totalOmset,
+        hpp: totalHpp,
+        laba: totalOmset - totalHpp
+      };
+
+      dataTransaksi.push(transaksiBaru);
+      localStorage.setItem('dataTransaksi', JSON.stringify(dataTransaksi));
+      simpanDanRender();
+
+      // Cetak Struk
+      const namaToko = localStorage.getItem('namaToko') || 'Toko Kelontong';
+      let struk = `================================\n       ${namaToko.toUpperCase()}\n================================\n`;
+      keranjang.forEach(k => {
+        struk += `${k.qty}x ${k.nama}\n   Rp ${k.jual.toLocaleString()} = Rp ${(k.jual * k.qty).toLocaleString()}\n`;
+      });
+      struk += `--------------------------------\nTOTAL : Rp ${totalOmset.toLocaleString()}\n================================\nTerima kasih telah berbelanja!`;
 
       alert(struk);
       keranjang = [];
       renderKeranjang();
+      tampilLaporan('harian');
+    }
+
+    function tampilLaporan(tipe) {
+      const skrg = new Date().toISOString().split('T')[0];
+      const bln = skrg.substring(0, 7);
+      const thn = skrg.substring(0, 4);
+
+      let filtered = [];
+      if (tipe === 'harian') {
+        filtered = dataTransaksi.filter(t => t.tanggal === skrg);
+        document.getElementById('periodeText').innerText = "Hari Ini (" + skrg + ")";
+      } else if (tipe === 'bulanan') {
+        filtered = dataTransaksi.filter(t => t.bulan === bln);
+        document.getElementById('periodeText').innerText = "Bulan Ini (" + bln + ")";
+      } else if (tipe === 'tahunan') {
+        filtered = dataTransaksi.filter(t => t.tahun === thn);
+        document.getElementById('periodeText').innerText = "Tahun Ini (" + thn + ")";
+      }
+
+      const totalOmset = filtered.reduce((acc, curr) => acc + curr.omset, 0);
+      const totalHpp = filtered.reduce((acc, curr) => acc + curr.hpp, 0);
+      const totalLaba = totalOmset - totalHpp;
+
+      document.getElementById('lapOmset').innerText = "Rp " + totalOmset.toLocaleString();
+      document.getElementById('lapHpp').innerText = "Rp " + totalHpp.toLocaleString();
+      document.getElementById('lapLaba').innerText = "Rp " + totalLaba.toLocaleString();
     }
 
     function hitungZakat() {
@@ -317,6 +411,7 @@
     muatNamaToko();
     renderListBarang();
     updateSelectBarang();
+    tampilLaporan('harian');
   </script>
 </body>
 </html>
