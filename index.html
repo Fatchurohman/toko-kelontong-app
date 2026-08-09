@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>POS & Zakat - fatur62</title>
+  <title>POS Kelontong Complete - fatur62</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen pb-24 font-sans selection:bg-emerald-500">
 
-  <!-- Header -->
+  <!-- Header App -->
   <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
     <div onclick="gantiNamaToko()" class="cursor-pointer">
       <h1 class="text-lg font-bold tracking-wide text-emerald-400" id="namaTokoDisplay">Toko Anda</h1>
@@ -27,7 +27,59 @@
   <!-- Main Content -->
   <main class="p-4 max-w-lg mx-auto space-y-6">
 
-    <!-- Section 1: Kasir / Struk -->
+    <!-- 1. Form Input Master Barang -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+      <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
+        <span>📦</span> Entri Data Barang
+      </h2>
+      
+      <form id="formBarang" onsubmit="tambahBarang(event)" class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="kodeBarang" placeholder="Kode / Barcode" required class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200">
+          <input type="text" id="namaBarang" placeholder="Nama Barang" required class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200">
+        </div>
+
+        <select id="kategoriBarang" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-300">
+          <option value="Sembako">Sembako</option>
+          <option value="Minuman">Minuman</option>
+          <option value="Makanan/Jajanan">Makanan / Jajanan</option>
+          <option value="Sabun/Detergen">Sabun & Detergen</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="text-[10px] text-slate-400">Harga Beli</label>
+            <input type="number" id="hargaBeli" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400">Harga Jual</label>
+            <input type="number" id="hargaJual" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400">Stok</label>
+            <input type="number" id="stokBarang" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 rounded-xl shadow-lg shadow-emerald-900/20 transition">
+          + Simpan Barang
+        </button>
+      </form>
+    </section>
+
+    <!-- 2. Daftar Barang Tersimpan -->
+    <section class="space-y-2">
+      <div class="flex justify-between items-center px-1">
+        <h3 class="text-xs font-bold text-slate-300">Daftar Stok Barang (<span id="totalItem">0</span>)</h3>
+        <button onclick="hapusSemuaBarang()" class="text-[10px] text-rose-400 hover:underline">Reset Data</button>
+      </div>
+      <div id="listBarang" class="space-y-2 text-xs"></div>
+    </section>
+
+    <hr class="border-slate-800">
+
+    <!-- 3. Kasir & Penjualan -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
       <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
         <span>🛒</span> Kasir & Penjualan
@@ -46,7 +98,6 @@
         </div>
       </div>
 
-      <!-- Ringkasan Keranjang -->
       <div id="listKeranjang" class="space-y-1 text-xs pt-2 border-t border-slate-800">
         <p class="text-slate-500 text-center py-2">Keranjang masih kosong.</p>
       </div>
@@ -61,11 +112,11 @@
       </button>
     </section>
 
-    <!-- Section 2: Hitung Zakat Perniagaan -->
+    <!-- 4. Kalkulator Zakat Perniagaan -->
     <section class="bg-slate-900 border border-amber-500/20 rounded-2xl p-4 space-y-3">
       <div class="flex justify-between items-center">
         <h2 class="text-sm font-bold text-amber-400 flex items-center gap-1.5">
-          <span>🌙</span> Zakat Perniagaan
+          <span>🌙</span> Hitung Zakat Perniagaan
         </h2>
         <span class="text-[9px] bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">Nisab 85g Emas</span>
       </div>
@@ -87,9 +138,7 @@
         </button>
       </div>
 
-      <div id="hasilZakat" class="hidden bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
-        <!-- Hasil hitungan -->
-      </div>
+      <div id="hasilZakat" class="hidden bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1"></div>
     </section>
 
   </main>
@@ -109,6 +158,68 @@
         localStorage.setItem('namaToko', namaBaru);
         muatNamaToko();
       }
+    }
+
+    function tambahBarang(e) {
+      e.preventDefault();
+      const kode = document.getElementById('kodeBarang').value;
+      const nama = document.getElementById('namaBarang').value;
+      const kategori = document.getElementById('kategoriBarang').value;
+      const beli = parseFloat(document.getElementById('hargaBeli').value);
+      const jual = parseFloat(document.getElementById('hargaJual').value);
+      const stok = parseInt(document.getElementById('stokBarang').value);
+      const laba = jual - beli;
+
+      const itemBaru = { id: Date.now(), kode, nama, kategori, beli, jual, laba, stok };
+      dataBarang.push(itemBaru);
+      
+      simpanDanRender();
+      document.getElementById('formBarang').reset();
+    }
+
+    function hapusBarang(id) {
+      dataBarang = dataBarang.filter(item => item.id !== id);
+      simpanDanRender();
+    }
+
+    function hapusSemuaBarang() {
+      if (confirm("Yakin mau hapus semua data barang?")) {
+        dataBarang = [];
+        simpanDanRender();
+      }
+    }
+
+    function simpanDanRender() {
+      localStorage.setItem('dataBarang', JSON.stringify(dataBarang));
+      renderListBarang();
+      updateSelectBarang();
+    }
+
+    function renderListBarang() {
+      const container = document.getElementById('listBarang');
+      document.getElementById('totalItem').innerText = dataBarang.length;
+
+      if (dataBarang.length === 0) {
+        container.innerHTML = `<div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 text-center text-slate-500 text-xs">Belum ada data barang.</div>`;
+        return;
+      }
+
+      container.innerHTML = dataBarang.map(item => `
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex justify-between items-center">
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-100">${item.nama}</span>
+              <span class="text-[9px] bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full border border-slate-700">${item.kategori}</span>
+            </div>
+            <p class="text-[10px] text-slate-400">Kode: ${item.kode} • Stok: <strong class="text-slate-200">${item.stok}</strong></p>
+            <p class="text-[11px] font-medium text-slate-300">
+              Jual: <span class="text-emerald-400 font-bold">Rp ${item.jual.toLocaleString()}</span> 
+              <span class="text-[10px] text-slate-500">(Laba: Rp ${item.laba.toLocaleString()})</span>
+            </p>
+          </div>
+          <button onclick="hapusBarang(${item.id})" class="text-rose-400 hover:text-rose-300 p-2 text-sm">🗑️</button>
+        </div>
+      `).join('');
     }
 
     function updateSelectBarang() {
@@ -186,11 +297,9 @@
       const kas = parseFloat(document.getElementById('kasToko').value) || 0;
       const utang = parseFloat(document.getElementById('utangToko').value) || 0;
       
-      // Total Persediaan Barang (HPP)
       const nilaiBarang = dataBarang.reduce((acc, item) => acc + (item.beli * item.stok), 0);
-      
       const bersih = (nilaiBarang + kas) - utang;
-      const hargaEmas85g = 85 * 1300000; // Asumsi Rp 1.300.000 / gram
+      const hargaEmas85g = 85 * 1300000;
       const wajibZakat = bersih >= hargaEmas85g;
       const nilaiZakat = wajibZakat ? bersih * 0.025 : 0;
 
@@ -204,7 +313,9 @@
       `;
     }
 
+    // Init
     muatNamaToko();
+    renderListBarang();
     updateSelectBarang();
   </script>
 </body>
