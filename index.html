@@ -112,7 +112,7 @@
       </button>
     </section>
 
-    <!-- 4. Laporan Laba / Rugi (Fitur Baru) -->
+    <!-- 4. Laporan Laba / Rugi -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
       <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
         <span>📊</span> Laporan Laba / Rugi
@@ -172,14 +172,28 @@
     let dataTransaksi = JSON.parse(localStorage.getItem('dataTransaksi')) || [];
     let keranjang = [];
 
+    // Fungsi Onboarding Nama Toko Otomatis
     function muatNamaToko() {
-      const nama = localStorage.getItem('namaToko') || 'Toko Anda';
+      let nama = localStorage.getItem('namaToko');
+      
+      // Jika user baru pertama kali buka (belum ada nama toko)
+      if (!nama) {
+        nama = prompt("Selamat Datang! Silakan masukkan Nama Toko Anda:", "Toko Kelontong Berkah");
+        if (nama && nama.trim() !== "") {
+          localStorage.setItem('namaToko', nama);
+        } else {
+          nama = "Toko Saya";
+          localStorage.setItem('namaToko', nama);
+        }
+      }
+      
       document.getElementById('namaTokoDisplay').innerText = nama;
     }
 
     function gantiNamaToko() {
-      const namaBaru = prompt("Masukkan Nama Toko Anda:", localStorage.getItem('namaToko') || "");
-      if (namaBaru) {
+      const namaLama = localStorage.getItem('namaToko') || "";
+      const namaBaru = prompt("Masukkan Nama Toko Anda:", namaLama);
+      if (namaBaru && namaBaru.trim() !== "") {
         localStorage.setItem('namaToko', namaBaru);
         muatNamaToko();
       }
@@ -318,21 +332,18 @@
       let totalOmset = 0;
       let totalHpp = 0;
 
-      // Potong Stok Barang & Hitung Omset/HPP
       keranjang.forEach(k => {
         const subOmset = k.jual * k.qty;
         const subHpp = k.beli * k.qty;
         totalOmset += subOmset;
         totalHpp += subHpp;
 
-        // Potong stok di database lokal
         const barangAsli = dataBarang.find(b => b.id === k.id);
         if (barangAsli) {
           barangAsli.stok -= k.qty;
         }
       });
 
-      // Simpan Transaksi
       const transaksiBaru = {
         id: Date.now(),
         tanggal: tglStr,
@@ -347,7 +358,6 @@
       localStorage.setItem('dataTransaksi', JSON.stringify(dataTransaksi));
       simpanDanRender();
 
-      // Cetak Struk
       const namaToko = localStorage.getItem('namaToko') || 'Toko Kelontong';
       let struk = `================================\n       ${namaToko.toUpperCase()}\n================================\n`;
       keranjang.forEach(k => {
