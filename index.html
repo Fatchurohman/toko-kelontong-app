@@ -6,16 +6,16 @@
   <title>POS Kelontong - fatur62</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-20 font-sans">
 
   <!-- Header App -->
-  <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 p-4 sticky top-0 z-50 flex justify-between items-center">
+  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
     <div onclick="gantiNamaToko()" class="cursor-pointer">
-      <h1 class="text-lg font-bold tracking-wide text-emerald-400" id="namaTokoDisplay">Toko Kelontong</h1>
+      <h1 class="text-lg font-bold tracking-wide text-emerald-400" id="namaTokoDisplay">Toko Anda</h1>
       <p class="text-[10px] text-slate-400">Ketuk untuk ubah nama toko</p>
     </div>
     
-    <div class="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-full border border-slate-700">
+    <div class="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-full border border-slate-700/80">
       <span class="relative flex h-2 w-2">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
         <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -24,20 +24,73 @@
     </div>
   </header>
 
-  <main class="p-4 max-w-lg mx-auto space-y-4">
-    <div class="bg-slate-900 border border-emerald-500/20 rounded-xl p-4 text-center">
-      <p class="text-[11px] text-slate-400">Selamat datang kembali!</p>
-    </div>
+  <!-- Main Content -->
+  <main class="p-4 max-w-lg mx-auto space-y-5">
+    
+    <!-- Form Tambah Barang -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+      <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
+        <span>📦</span> Tambah Master Barang
+      </h2>
+      
+      <form id="formBarang" onsubmit="tambahBarang(event)" class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="kodeBarang" placeholder="Kode / Barcode" required class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 focus:border-emerald-500 outline-none text-slate-200">
+          <input type="text" id="namaBarang" placeholder="Nama Barang" required class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 focus:border-emerald-500 outline-none text-slate-200">
+        </div>
+
+        <select id="kategoriBarang" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 focus:border-emerald-500 outline-none text-slate-300">
+          <option value="Sembako">Sembako</option>
+          <option value="Minuman">Minuman</option>
+          <option value="Makanan/Jajanan">Makanan / Jajanan</option>
+          <option value="Sabun/Detergen">Sabun & Detergen</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="text-[10px] text-slate-400">Harga Beli</label>
+            <input type="number" id="hargaBeli" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 focus:border-emerald-500 outline-none mt-1">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400">Harga Jual</label>
+            <input type="number" id="hargaJual" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 focus:border-emerald-500 outline-none mt-1">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400">Stok</label>
+            <input type="number" id="stokBarang" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 focus:border-emerald-500 outline-none mt-1">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-emerald-900/20 transition">
+          + Simpan Barang
+        </button>
+      </form>
+    </section>
+
+    <!-- Daftar Barang Tersimpan -->
+    <section class="space-y-2">
+      <div class="flex justify-between items-center px-1">
+        <h3 class="text-xs font-bold text-slate-300">Daftar Barang (<span id="totalItem">0</span>)</h3>
+        <button onclick="hapusSemuaBarang()" class="text-[10px] text-rose-400 hover:underline">Reset Data</button>
+      </div>
+
+      <div id="listBarang" class="space-y-2 text-xs">
+        <!-- Data barang dimuat di sini -->
+      </div>
+    </section>
+
   </main>
 
   <script>
-    // Fungsi Menampilkan Nama Toko
+    // System LocalStorage
+    let dataBarang = JSON.parse(localStorage.getItem('dataBarang')) || [];
+
     function muatNamaToko() {
       const nama = localStorage.getItem('namaToko') || 'Toko Anda';
       document.getElementById('namaTokoDisplay').innerText = nama;
     }
 
-    // Fungsi Ganti Nama Toko
     function gantiNamaToko() {
       const namaBaru = prompt("Masukkan Nama Toko Anda:", localStorage.getItem('namaToko') || "");
       if (namaBaru) {
@@ -46,8 +99,73 @@
       }
     }
 
-    // Jalankan saat pertama kali buka
+    function tambahBarang(e) {
+      e.preventDefault();
+      const kode = document.getElementById('kodeBarang').value;
+      const nama = document.getElementById('namaBarang').value;
+      const kategori = document.getElementById('kategoriBarang').value;
+      const beli = parseFloat(document.getElementById('hargaBeli').value);
+      const jual = parseFloat(document.getElementById('hargaJual').value);
+      const stok = parseInt(document.getElementById('stokBarang').value);
+      const laba = jual - beli;
+
+      const itemBaru = { id: Date.now(), kode, nama, kategori, beli, jual, laba, stok };
+      dataBarang.push(itemBaru);
+      
+      simpanDanRender();
+      document.getElementById('formBarang').reset();
+    }
+
+    function hapusBarang(id) {
+      dataBarang = dataBarang.filter(item => item.id !== id);
+      simpanDanRender();
+    }
+
+    function hapusSemuaBarang() {
+      if (confirm("Yakin mau hapus semua data barang?")) {
+        dataBarang = [];
+        simpanDanRender();
+      }
+    }
+
+    function simpanDanRender() {
+      localStorage.setItem('dataBarang', JSON.stringify(dataBarang));
+      renderListBarang();
+    }
+
+    function renderListBarang() {
+      const container = document.getElementById('listBarang');
+      document.getElementById('totalItem').innerText = dataBarang.length;
+
+      if (dataBarang.length === 0) {
+        container.innerHTML = `
+          <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 text-center text-slate-500 text-xs">
+            Belum ada barang diinput.
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = dataBarang.map(item => `
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex justify-between items-center">
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-100">${item.nama}</span>
+              <span class="text-[9px] bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full border border-slate-700">${item.kategori}</span>
+            </div>
+            <p class="text-[10px] text-slate-400">Kode: ${item.kode} • Stok: <strong class="text-slate-200">${item.stok}</strong></p>
+            <p class="text-[11px] font-medium text-slate-300">
+              Jual: <span class="text-emerald-400 font-bold">Rp ${item.jual.toLocaleString()}</span> 
+              <span class="text-[10px] text-slate-500">(Laba: Rp ${item.laba.toLocaleString()})</span>
+            </p>
+          </div>
+          <button onclick="hapusBarang(${item.id})" class="text-rose-400 hover:text-rose-300 p-2 text-sm">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    // Inisialisasi awal
     muatNamaToko();
+    renderListBarang();
   </script>
 </body>
 </html>
