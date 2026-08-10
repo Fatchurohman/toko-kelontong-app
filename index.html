@@ -10,83 +10,51 @@
 
   <!-- Header App -->
   <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
-    <div onclick="gantiNamaToko()" class="cursor-pointer">
+    <div>
       <h1 class="text-lg font-bold tracking-wide text-emerald-400" id="namaTokoDisplay">Toko Anda</h1>
-      <p class="text-[10px] text-slate-400">Ketuk untuk ubah nama toko</p>
+      <p class="text-[10px] text-slate-400">Mode: <span id="roleDisplay" class="font-bold text-amber-400">Kasir</span></p>
     </div>
     
-    <div class="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-full border border-slate-700">
-      <span class="relative flex h-2 w-2">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-      </span>
-      <span class="text-[10px] text-slate-300 font-medium">developer : <strong class="text-emerald-300">fatur62</strong></span>
+    <div class="flex items-center gap-2">
+      <!-- Tombol Switch Role -->
+      <button onclick="switchRole()" id="btnSwitchRole" class="text-[10px] bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1.5 rounded-lg text-slate-200 font-semibold">
+        🔒 Masuk Owner
+      </button>
+
+      <!-- Branding Developer -->
+      <div class="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1.5 rounded-full border border-slate-700">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span class="text-[9px] text-slate-300 font-medium">developer : <strong class="text-emerald-300">fatur62</strong></span>
+      </div>
     </div>
   </header>
 
   <!-- Main Content -->
   <main class="p-4 max-w-lg mx-auto space-y-6">
 
-    <!-- 1. Form Input Master Barang -->
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
-      <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
-        <span>📦</span> Entri Data Barang
-      </h2>
-      
-      <form id="formBarang" onsubmit="tambahBarang(event)" class="space-y-3 text-xs">
-        <div class="grid grid-cols-2 gap-2">
-          <input type="text" id="kodeBarang" placeholder="Kode / Barcode" required class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200">
-          <input type="text" id="namaBarang" placeholder="Nama Barang" required class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200">
-        </div>
+    <!-- Navigasi Menu Atas -->
+    <div class="grid grid-cols-2 gap-2 text-xs">
+      <button onclick="bukaModalStok()" class="bg-slate-900 border border-slate-800 hover:border-emerald-500/50 p-3 rounded-xl flex items-center justify-between font-bold text-slate-200">
+        <span>📦 Cek Stok Barang</span>
+        <span class="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full text-[10px]" id="badgeTotalStok">0 Item</span>
+      </button>
+      <button onclick="bukaModalInputBarang()" class="owner-only hidden bg-slate-900 border border-slate-800 hover:border-emerald-500/50 p-3 rounded-xl flex items-center justify-between font-bold text-slate-200">
+        <span>➕ Tambah Barang</span>
+        <span class="text-emerald-400">Owner</span>
+      </button>
+    </div>
 
-        <select id="kategoriBarang" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-300">
-          <option value="Sembako">Sembako</option>
-          <option value="Minuman">Minuman</option>
-          <option value="Makanan/Jajanan">Makanan / Jajanan</option>
-          <option value="Sabun/Detergen">Sabun & Detergen</option>
-          <option value="Lainnya">Lainnya</option>
-        </select>
-
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="text-[10px] text-slate-400">Harga Beli</label>
-            <input type="number" id="hargaBeli" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
-          </div>
-          <div>
-            <label class="text-[10px] text-slate-400">Harga Jual</label>
-            <input type="number" id="hargaJual" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
-          </div>
-          <div>
-            <label class="text-[10px] text-slate-400">Stok</label>
-            <input type="number" id="stokBarang" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
-          </div>
-        </div>
-
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 rounded-xl shadow-lg shadow-emerald-900/20 transition">
-          + Simpan Barang
-        </button>
-      </form>
-    </section>
-
-    <!-- 2. Daftar Barang Tersimpan -->
-    <section class="space-y-2">
-      <div class="flex justify-between items-center px-1">
-        <h3 class="text-xs font-bold text-slate-300">Daftar Stok Barang (<span id="totalItem">0</span>)</h3>
-        <button onclick="hapusSemuaBarang()" class="text-[10px] text-rose-400 hover:underline">Reset Data</button>
-      </div>
-      <div id="listBarang" class="space-y-2 text-xs"></div>
-    </section>
-
-    <hr class="border-slate-800">
-
-    <!-- 3. Kasir & Penjualan -->
+    <!-- 1. HALAMAN UTAMA KASIR (Selalu Tampak) -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
       <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
-        <span>🛒</span> Kasir & Penjualan
+        <span>🛒</span> Transaksi Kasir
       </h2>
 
       <div class="space-y-2 text-xs">
-        <label class="text-[10px] text-slate-400">Pilih Barang Masuk Keranjang:</label>
+        <label class="text-[10px] text-slate-400">Pilih Barang:</label>
         <select id="pilihBarangKasir" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200">
           <!-- Item barang diisi JS -->
         </select>
@@ -112,91 +80,211 @@
       </button>
     </section>
 
-    <!-- 4. Laporan Laba / Rugi -->
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-      <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
-        <span>📊</span> Laporan Laba / Rugi
-      </h2>
-
-      <div class="flex gap-2 text-xs">
-        <button onclick="tampilLaporan('harian')" class="flex-1 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 py-1.5 rounded-lg border border-slate-700">Harian</button>
-        <button onclick="tampilLaporan('bulanan')" class="flex-1 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 py-1.5 rounded-lg border border-slate-700">Bulanan</button>
-        <button onclick="tampilLaporan('tahunan')" class="flex-1 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 py-1.5 rounded-lg border border-slate-700">Tahunan</button>
-      </div>
-
-      <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1.5">
-        <p class="text-slate-400">Periode: <strong id="periodeText" class="text-slate-200">Harian</strong></p>
-        <div class="flex justify-between"><span>Total Omset:</span> <strong id="lapOmset" class="text-slate-200">Rp 0</strong></div>
-        <div class="flex justify-between"><span>Total HPP (Modal):</span> <strong id="lapHpp" class="text-slate-200">Rp 0</strong></div>
-        <hr class="border-slate-800 my-1">
-        <div class="flex justify-between text-sm font-bold">
-          <span>Laba Bersih:</span>
-          <span id="lapLaba" class="text-emerald-400">Rp 0</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5. Kalkulator Zakat Perniagaan -->
-    <section class="bg-slate-900 border border-amber-500/20 rounded-2xl p-4 space-y-3">
-      <div class="flex justify-between items-center">
-        <h2 class="text-sm font-bold text-amber-400 flex items-center gap-1.5">
-          <span>🌙</span> Hitung Zakat Perniagaan
+    <!-- 2. HALAMAN KHUSUS OWNER (Hanya Tampak Jika Mode Owner) -->
+    <div id="sectionOwner" class="owner-only hidden space-y-6">
+      
+      <!-- Laporan Laba / Rugi -->
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
+          <span>📊</span> Laporan Laba / Rugi (Owner)
         </h2>
-        <span class="text-[9px] bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">Nisab 85g Emas</span>
-      </div>
 
-      <div class="space-y-2 text-xs">
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-[10px] text-slate-400">Kas / Uang Tunai Toko</label>
-            <input type="number" id="kasToko" placeholder="0" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
-          </div>
-          <div>
-            <label class="text-[10px] text-slate-400">Utang Jatuh Tempo</label>
-            <input type="number" id="utangToko" placeholder="0" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
-          </div>
+        <div class="flex gap-2 text-xs">
+          <button onclick="tampilLaporan('harian')" class="flex-1 bg-slate-800 hover:bg-slate-700 py-1.5 rounded-lg border border-slate-700">Harian</button>
+          <button onclick="tampilLaporan('bulanan')" class="flex-1 bg-slate-800 hover:bg-slate-700 py-1.5 rounded-lg border border-slate-700">Bulanan</button>
+          <button onclick="tampilLaporan('tahunan')" class="flex-1 bg-slate-800 hover:bg-slate-700 py-1.5 rounded-lg border border-slate-700">Tahunan</button>
         </div>
 
-        <button onclick="hitungZakat()" class="w-full bg-slate-800 border border-slate-700 font-bold py-2 rounded-xl text-slate-200">
-          Kalkulasi Zakat Usaha
-        </button>
-      </div>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1.5">
+          <p class="text-slate-400">Periode: <strong id="periodeText" class="text-slate-200">Hari Ini</strong></p>
+          <div class="flex justify-between"><span>Total Omset:</span> <strong id="lapOmset" class="text-slate-200">Rp 0</strong></div>
+          <div class="flex justify-between"><span>Total HPP (Modal):</span> <strong id="lapHpp" class="text-slate-200">Rp 0</strong></div>
+          <hr class="border-slate-800 my-1">
+          <div class="flex justify-between text-sm font-bold">
+            <span>Laba Bersih:</span>
+            <span id="lapLaba" class="text-emerald-400">Rp 0</span>
+          </div>
+        </div>
+      </section>
 
-      <div id="hasilZakat" class="hidden bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1"></div>
-    </section>
+      <!-- Hitung Zakat Perniagaan -->
+      <section class="bg-slate-900 border border-amber-500/20 rounded-2xl p-4 space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-sm font-bold text-amber-400 flex items-center gap-1.5">
+            <span>🌙</span> Hitung Zakat Perniagaan
+          </h2>
+          <span class="text-[9px] bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">Nisab 85g Emas</span>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[10px] text-slate-400">Kas / Tunai Toko</label>
+              <input type="number" id="kasToko" placeholder="0" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400">Utang Jatuh Tempo</label>
+              <input type="number" id="utangToko" placeholder="0" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
+            </div>
+          </div>
+
+          <button onclick="hitungZakat()" class="w-full bg-slate-800 border border-slate-700 font-bold py-2 rounded-xl text-slate-200">
+            Kalkulasi Zakat Usaha
+          </button>
+        </div>
+
+        <div id="hasilZakat" class="hidden bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1"></div>
+      </section>
+
+    </div>
 
   </main>
+
+  <!-- MODAL: Tabel Stok Barang -->
+  <div id="modalStok" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col p-4 space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-emerald-400">📦 Tabel Stok Barang</h3>
+        <button onclick="tutupModalStok()" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+
+      <div class="overflow-x-auto overflow-y-auto flex-1">
+        <table class="w-full text-left text-[11px] text-slate-300">
+          <thead class="bg-slate-950 text-slate-400 sticky top-0">
+            <tr>
+              <th class="p-2">Kode</th>
+              <th class="p-2">Nama</th>
+              <th class="p-2">Stok</th>
+              <th class="p-2">Harga Jual</th>
+              <th class="p-2 owner-only hidden">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tabelBodyStok" class="divide-y divide-slate-800">
+            <!-- Isi Tabel -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Input Master Barang (Khusus Owner) -->
+  <div id="modalInputBarang" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-4 space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-emerald-400">➕ Entri Barang Baru</h3>
+        <button onclick="tutupModalInputBarang()" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+
+      <form id="formBarang" onsubmit="tambahBarang(event)" class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="kodeBarang" placeholder="Kode / Barcode" required class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200">
+          <input type="text" id="namaBarang" placeholder="Nama Barang" required class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200">
+        </div>
+
+        <select id="kategoriBarang" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-300">
+          <option value="Sembako">Sembako</option>
+          <option value="Minuman">Minuman</option>
+          <option value="Makanan/Jajanan">Makanan / Jajanan</option>
+          <option value="Sabun/Detergen">Sabun & Detergen</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="text-[10px] text-slate-400">Harga Beli (Modal)</label>
+            <input type="number" id="hargaBeli" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400">Harga Jual</label>
+            <input type="number" id="hargaJual" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400">Stok Awal</label>
+            <input type="number" id="stokBarang" placeholder="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 outline-none mt-1">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 rounded-xl transition text-white">
+          + Simpan Ke Master Stok
+        </button>
+      </form>
+    </div>
+  </div>
 
   <script>
     let dataBarang = JSON.parse(localStorage.getItem('dataBarang')) || [];
     let dataTransaksi = JSON.parse(localStorage.getItem('dataTransaksi')) || [];
     let keranjang = [];
+    let isOwner = false;
 
-    // Fungsi Onboarding Nama Toko Otomatis
-    function muatNamaToko() {
+    function initApp() {
       let nama = localStorage.getItem('namaToko');
-      
-      // Jika user baru pertama kali buka (belum ada nama toko)
+      let pin = localStorage.getItem('pinOwner');
+
       if (!nama) {
-        nama = prompt("Selamat Datang! Silakan masukkan Nama Toko Anda:", "Toko Kelontong Berkah");
-        if (nama && nama.trim() !== "") {
-          localStorage.setItem('namaToko', nama);
-        } else {
-          nama = "Toko Saya";
-          localStorage.setItem('namaToko', nama);
-        }
+        nama = prompt("Selamat Datang! Masukkan Nama Toko Anda:", "Toko Berkah");
+        localStorage.setItem('namaToko', nama || "Toko Saya");
       }
       
-      document.getElementById('namaTokoDisplay').innerText = nama;
+      if (!pin) {
+        pin = prompt("Buat PIN Pemilik (Owner) Baru (misal: 1234):", "1234");
+        localStorage.setItem('pinOwner', pin || "1234");
+      }
+
+      document.getElementById('namaTokoDisplay').innerText = localStorage.getItem('namaToko');
+      renderListBarang();
+      updateSelectBarang();
+      tampilLaporan('harian');
     }
 
-    function gantiNamaToko() {
-      const namaLama = localStorage.getItem('namaToko') || "";
-      const namaBaru = prompt("Masukkan Nama Toko Anda:", namaLama);
-      if (namaBaru && namaBaru.trim() !== "") {
-        localStorage.setItem('namaToko', namaBaru);
-        muatNamaToko();
+    function switchRole() {
+      if (isOwner) {
+        // Switch back to Kasir
+        isOwner = false;
+        applyRoleUI();
+      } else {
+        // Auth PIN
+        const pinInput = prompt("Masukkan PIN Pemilik (Owner):");
+        const pinOri = localStorage.getItem('pinOwner');
+        if (pinInput === pinOri) {
+          isOwner = true;
+          applyRoleUI();
+        } else {
+          alert("PIN Salah!");
+        }
       }
+    }
+
+    function applyRoleUI() {
+      const roleText = document.getElementById('roleDisplay');
+      const btnSwitch = document.getElementById('btnSwitchRole');
+      const ownerElements = document.querySelectorAll('.owner-only');
+
+      if (isOwner) {
+        roleText.innerText = "Owner (Pemilik)";
+        roleText.className = "font-bold text-emerald-400";
+        btnSwitch.innerText = "🔓 Keluar Owner";
+        ownerElements.forEach(el => el.classList.remove('hidden'));
+      } else {
+        roleText.innerText = "Kasir";
+        roleText.className = "font-bold text-amber-400";
+        btnSwitch.innerText = "🔒 Masuk Owner";
+        ownerElements.forEach(el => el.classList.add('hidden'));
+      }
+      renderListBarang();
+    }
+
+    function bukaModalStok() {
+      document.getElementById('modalStok').classList.remove('hidden');
+    }
+    function tutupModalStok() {
+      document.getElementById('modalStok').classList.add('hidden');
+    }
+    function bukaModalInputBarang() {
+      document.getElementById('modalInputBarang').classList.remove('hidden');
+    }
+    function tutupModalInputBarang() {
+      document.getElementById('modalInputBarang').classList.add('hidden');
     }
 
     function tambahBarang(e) {
@@ -207,23 +295,18 @@
       const beli = parseFloat(document.getElementById('hargaBeli').value);
       const jual = parseFloat(document.getElementById('hargaJual').value);
       const stok = parseInt(document.getElementById('stokBarang').value);
-      const laba = jual - beli;
 
-      const itemBaru = { id: Date.now(), kode, nama, kategori, beli, jual, laba, stok };
+      const itemBaru = { id: Date.now(), kode, nama, kategori, beli, jual, laba: jual - beli, stok };
       dataBarang.push(itemBaru);
       
       simpanDanRender();
       document.getElementById('formBarang').reset();
+      tutupModalInputBarang();
     }
 
     function hapusBarang(id) {
-      dataBarang = dataBarang.filter(item => item.id !== id);
-      simpanDanRender();
-    }
-
-    function hapusSemuaBarang() {
-      if (confirm("Yakin mau hapus semua data barang?")) {
-        dataBarang = [];
+      if (confirm("Hapus barang dari stok?")) {
+        dataBarang = dataBarang.filter(item => item.id !== id);
         simpanDanRender();
       }
     }
@@ -235,29 +318,24 @@
     }
 
     function renderListBarang() {
-      const container = document.getElementById('listBarang');
-      document.getElementById('totalItem').innerText = dataBarang.length;
+      const body = document.getElementById('tabelBodyStok');
+      document.getElementById('badgeTotalStok').innerText = dataBarang.length + " Item";
 
       if (dataBarang.length === 0) {
-        container.innerHTML = `<div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 text-center text-slate-500 text-xs">Belum ada data barang.</div>`;
+        body.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Belum ada barang.</td></tr>`;
         return;
       }
 
-      container.innerHTML = dataBarang.map(item => `
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex justify-between items-center">
-          <div class="space-y-0.5">
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-slate-100">${item.nama}</span>
-              <span class="text-[9px] bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full border border-slate-700">${item.kategori}</span>
-            </div>
-            <p class="text-[10px] text-slate-400">Kode: ${item.kode} • Stok: <strong class="text-slate-200">${item.stok}</strong></p>
-            <p class="text-[11px] font-medium text-slate-300">
-              Jual: <span class="text-emerald-400 font-bold">Rp ${item.jual.toLocaleString()}</span> 
-              <span class="text-[10px] text-slate-500">(Laba: Rp ${item.laba.toLocaleString()})</span>
-            </p>
-          </div>
-          <button onclick="hapusBarang(${item.id})" class="text-rose-400 hover:text-rose-300 p-2 text-sm">🗑️</button>
-        </div>
+      body.innerHTML = dataBarang.map(item => `
+        <tr class="hover:bg-slate-800/50">
+          <td class="p-2 font-mono text-slate-400">${item.kode}</td>
+          <td class="p-2 font-semibold text-slate-100">${item.nama}</td>
+          <td class="p-2"><span class="bg-slate-800 px-2 py-0.5 rounded ${item.stok <= 5 ? 'text-rose-400 font-bold' : 'text-emerald-400'}">${item.stok}</span></td>
+          <td class="p-2">Rp ${item.jual.toLocaleString()}</td>
+          <td class="p-2 owner-only ${isOwner ? '' : 'hidden'}">
+            <button onclick="hapusBarang(${item.id})" class="text-rose-400 hover:text-rose-300">🗑️</button>
+          </td>
+        </tr>
       `).join('');
     }
 
@@ -276,18 +354,11 @@
       const item = dataBarang.find(b => b.id === id);
 
       if (!item) return;
-
-      if (qty > item.stok) {
-        alert("Stok barang tidak cukup!");
-        return;
-      }
+      if (qty > item.stok) { alert("Stok barang tidak mencukupi!"); return; }
 
       const ada = keranjang.find(k => k.id === id);
       if (ada) {
-        if (ada.qty + qty > item.stok) {
-          alert("Total pembelian melebihi stok yang ada!");
-          return;
-        }
+        if (ada.qty + qty > item.stok) { alert("Pembelian melebihi sisa stok!"); return; }
         ada.qty += qty;
       } else {
         keranjang.push({ ...item, qty });
@@ -319,10 +390,7 @@
     }
 
     function prosesBayar() {
-      if (keranjang.length === 0) {
-        alert("Keranjang belanja kosong!");
-        return;
-      }
+      if (keranjang.length === 0) { alert("Keranjang kosong!"); return; }
 
       const now = new Date();
       const tglStr = now.toISOString().split('T')[0];
@@ -333,28 +401,19 @@
       let totalHpp = 0;
 
       keranjang.forEach(k => {
-        const subOmset = k.jual * k.qty;
-        const subHpp = k.beli * k.qty;
-        totalOmset += subOmset;
-        totalHpp += subHpp;
+        totalOmset += k.jual * k.qty;
+        totalHpp += k.beli * k.qty;
 
+        // Potong stok real-time
         const barangAsli = dataBarang.find(b => b.id === k.id);
-        if (barangAsli) {
-          barangAsli.stok -= k.qty;
-        }
+        if (barangAsli) { barangAsli.stok -= k.qty; }
       });
 
-      const transaksiBaru = {
-        id: Date.now(),
-        tanggal: tglStr,
-        bulan: blnStr,
-        tahun: thnStr,
-        omset: totalOmset,
-        hpp: totalHpp,
-        laba: totalOmset - totalHpp
-      };
+      dataTransaksi.push({
+        id: Date.now(), tanggal: tglStr, bulan: blnStr, tahun: thnStr,
+        omset: totalOmset, hpp: totalHpp, laba: totalOmset - totalHpp
+      });
 
-      dataTransaksi.push(transaksiBaru);
       localStorage.setItem('dataTransaksi', JSON.stringify(dataTransaksi));
       simpanDanRender();
 
@@ -377,51 +436,38 @@
       const thn = skrg.substring(0, 4);
 
       let filtered = [];
-      if (tipe === 'harian') {
-        filtered = dataTransaksi.filter(t => t.tanggal === skrg);
-        document.getElementById('periodeText').innerText = "Hari Ini (" + skrg + ")";
-      } else if (tipe === 'bulanan') {
-        filtered = dataTransaksi.filter(t => t.bulan === bln);
-        document.getElementById('periodeText').innerText = "Bulan Ini (" + bln + ")";
-      } else if (tipe === 'tahunan') {
-        filtered = dataTransaksi.filter(t => t.tahun === thn);
-        document.getElementById('periodeText').innerText = "Tahun Ini (" + thn + ")";
-      }
+      if (tipe === 'harian') filtered = dataTransaksi.filter(t => t.tanggal === skrg);
+      else if (tipe === 'bulanan') filtered = dataTransaksi.filter(t => t.bulan === bln);
+      else if (tipe === 'tahunan') filtered = dataTransaksi.filter(t => t.tahun === thn);
 
       const totalOmset = filtered.reduce((acc, curr) => acc + curr.omset, 0);
       const totalHpp = filtered.reduce((acc, curr) => acc + curr.hpp, 0);
-      const totalLaba = totalOmset - totalHpp;
 
       document.getElementById('lapOmset').innerText = "Rp " + totalOmset.toLocaleString();
       document.getElementById('lapHpp').innerText = "Rp " + totalHpp.toLocaleString();
-      document.getElementById('lapLaba').innerText = "Rp " + totalLaba.toLocaleString();
+      document.getElementById('lapLaba').innerText = "Rp " + (totalOmset - totalHpp).toLocaleString();
     }
 
     function hitungZakat() {
       const kas = parseFloat(document.getElementById('kasToko').value) || 0;
       const utang = parseFloat(document.getElementById('utangToko').value) || 0;
-      
       const nilaiBarang = dataBarang.reduce((acc, item) => acc + (item.beli * item.stok), 0);
       const bersih = (nilaiBarang + kas) - utang;
       const hargaEmas85g = 85 * 1300000;
       const wajibZakat = bersih >= hargaEmas85g;
-      const nilaiZakat = wajibZakat ? bersih * 0.025 : 0;
 
       const res = document.getElementById('hasilZakat');
       res.classList.remove('hidden');
       res.innerHTML = `
-        <p>Aset Barang (HPP): <strong>Rp ${nilaiBarang.toLocaleString()}</strong></p>
-        <p>Total Harta Usaha: <strong>Rp ${bersih.toLocaleString()}</strong></p>
-        <p>Status Nisab: <span class="font-bold ${wajibZakat ? 'text-emerald-400' : 'text-amber-400'}">${wajibZakat ? 'Wajib Zakat (≥ 85g Emas)' : 'Belum Mencapai Nisab'}</span></p>
-        ${wajibZakat ? `<p class="text-emerald-300 font-bold text-sm mt-1">Zakat 2.5%: Rp ${nilaiZakat.toLocaleString()}</p>` : ''}
+        <p>Nilai Stok Barang (HPP): <strong>Rp ${nilaiBarang.toLocaleString()}</strong></p>
+        <p>Total Aset Usaha: <strong>Rp ${bersih.toLocaleString()}</strong></p>
+        <p>Nisab (85g Emas): <strong>Rp ${hargaEmas85g.toLocaleString()}</strong></p>
+        <p>Status: <span class="font-bold ${wajibZakat ? 'text-emerald-400' : 'text-amber-400'}">${wajibZakat ? 'Wajib Zakat' : 'Belum Wajib Zakat'}</span></p>
+        ${wajibZakat ? `<p class="text-emerald-300 font-bold mt-1">Zakat 2.5%: Rp ${(bersih * 0.025).toLocaleString()}</p>` : ''}
       `;
     }
 
-    // Init
-    muatNamaToko();
-    renderListBarang();
-    updateSelectBarang();
-    tampilLaporan('harian');
+    initApp();
   </script>
 </body>
 </html>
