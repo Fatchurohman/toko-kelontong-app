@@ -8,12 +8,17 @@
   <link rel="icon" type="image/png" href="icon.png">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen pb-24 font-sans selection:bg-emerald-500">
-
+  
   <!-- Header App -->
   <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
-    <div>
-      <h1 class="text-lg font-bold tracking-wide text-emerald-400" id="namaTokoDisplay">Toko Anda</h1>
-      <p class="text-[10px] text-slate-400">Mode: <span id="roleDisplay" class="font-bold text-amber-400">Kasir</span></p>
+    <div class="flex items-center gap-3">
+      <!-- LOGO DENGAN NAMA icon.png / con.png -->
+      <img src="icon.png" alt="Logo" class="w-10 h-10 rounded-xl border border-emerald-500/30 object-cover shadow-md" onerror="this.src='con.png'">
+      
+      <div>
+        <h1 class="text-lg font-bold tracking-wide text-emerald-400" id="namaTokoDisplay">Toko Anda</h1>
+        <p class="text-[10px] text-slate-400">Mode: <span id="roleDisplay" class="font-bold text-amber-400">Kasir</span></p>
+      </div>
     </div>
     
     <div class="flex items-center gap-2">
