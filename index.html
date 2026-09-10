@@ -6,13 +6,30 @@
   <title>POS Kelontong Complete - fatur62</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" type="image/png" href="icon.png">
+  <style>
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #areaCetakStruk, #areaCetakStruk *, #areaCetakStok, #areaCetakStok * {
+        visibility: visible;
+      }
+      #areaCetakStruk, #areaCetakStok {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        color: #000 !important;
+        background: #fff !important;
+      }
+    }
+  </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen pb-24 font-sans selection:bg-emerald-500">
   
   <!-- Header App -->
   <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
     <div class="flex items-center gap-3">
-      <!-- LOGO DENGAN NAMA icon.png / con.png -->
       <img src="icon.png" alt="Logo" class="w-10 h-10 rounded-xl border border-emerald-500/30 object-cover shadow-md" onerror="this.src='con.png'">
       
       <div>
@@ -22,12 +39,10 @@
     </div>
     
     <div class="flex items-center gap-2">
-      <!-- Tombol Switch Role -->
       <button onclick="switchRole()" id="btnSwitchRole" class="text-[10px] bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1.5 rounded-lg text-slate-200 font-semibold">
         🔒 Masuk Owner
       </button>
 
-      <!-- Branding Developer -->
       <div class="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1.5 rounded-full border border-slate-700">
         <span class="relative flex h-2 w-2">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -53,7 +68,7 @@
       </button>
     </div>
 
-    <!-- 1. HALAMAN UTAMA KASIR (Selalu Tampak) -->
+    <!-- 1. HALAMAN UTAMA KASIR -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
       <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
         <span>🛒</span> Transaksi Kasir
@@ -62,7 +77,6 @@
       <div class="space-y-2 text-xs">
         <label class="text-[10px] text-slate-400">Pilih Barang:</label>
         <select id="pilihBarangKasir" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200">
-          <!-- Item barang diisi JS -->
         </select>
         <div class="flex gap-2">
           <input type="number" id="qtyKasir" value="1" min="1" class="w-20 bg-slate-950 border border-slate-800 rounded-xl p-2 text-center outline-none">
@@ -99,7 +113,7 @@
       </button>
     </section>
 
-    <!-- 2. HALAMAN KHUSUS OWNER (Hanya Tampak Jika Mode Owner) -->
+    <!-- 2. HALAMAN KHUSUS OWNER -->
     <div id="sectionOwner" class="owner-only hidden space-y-6">
       
       <!-- Laporan Laba / Rugi -->
@@ -161,32 +175,40 @@
 
   <!-- MODAL: Tabel Stok Barang -->
   <div id="modalStok" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col p-4 space-y-3">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col p-4 space-y-3">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
         <h3 class="text-sm font-bold text-emerald-400">📦 Tabel Stok Barang</h3>
-        <button onclick="tutupModalStok()" class="text-slate-400 hover:text-white font-bold">✕</button>
+        <div class="flex gap-2 items-center">
+          <button onclick="cetakStokPDF()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg">🖨️ Cetak/PDF</button>
+          <button onclick="tutupModalStok()" class="text-slate-400 hover:text-white font-bold text-base">✕</button>
+        </div>
       </div>
 
-      <div class="overflow-x-auto overflow-y-auto flex-1">
-        <table class="w-full text-left text-[11px] text-slate-300">
-          <thead class="bg-slate-950 text-slate-400 sticky top-0">
+      <div class="overflow-x-auto overflow-y-auto flex-1" id="areaCetakStok">
+        <div class="hidden print:block mb-4 text-black">
+          <h2 class="text-lg font-bold" id="namaTokoStokPrint">LAPORAN STOK BARANG</h2>
+          <p class="text-xs" id="tglStokPrint"></p>
+          <hr class="border-black my-2">
+        </div>
+        <table class="w-full text-left text-[11px] text-slate-300 print:text-black">
+          <thead class="bg-slate-950 text-slate-400 print:bg-gray-200 print:text-black sticky top-0">
             <tr>
+              <th class="p-2">Tgl Masuk</th>
               <th class="p-2">Kode</th>
               <th class="p-2">Nama</th>
               <th class="p-2">Stok</th>
               <th class="p-2">Harga Jual</th>
-              <th class="p-2 owner-only hidden">Aksi</th>
+              <th class="p-2 owner-only print:hidden hidden">Aksi</th>
             </tr>
           </thead>
-          <tbody id="tabelBodyStok" class="divide-y divide-slate-800">
-            <!-- Isi Tabel -->
+          <tbody id="tabelBodyStok" class="divide-y divide-slate-800 print:divide-gray-300">
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: Input Master Barang (Khusus Owner) -->
+  <!-- MODAL: Input Master Barang -->
   <div id="modalInputBarang" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-4 space-y-3">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -195,6 +217,11 @@
       </div>
 
       <form id="formBarang" onsubmit="tambahBarang(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="text-[10px] text-slate-400">Tanggal Masuk Stok</label>
+          <input type="date" id="tglMasukBarang" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200 mt-1">
+        </div>
+
         <div class="grid grid-cols-2 gap-2">
           <input type="text" id="kodeBarang" placeholder="Kode / Barcode" required class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200">
           <input type="text" id="namaBarang" placeholder="Nama Barang" required class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200">
@@ -227,6 +254,46 @@
           + Simpan Ke Master Stok
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Struk Hasil Transaksi & Cetak -->
+  <div id="modalStruk" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-4 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-emerald-400">🧾 Struk Pembayaran</h3>
+        <button onclick="tutupModalStruk()" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+
+      <!-- Area Tampilan Struk -->
+      <div id="areaCetakStruk" class="bg-white text-black p-4 rounded-xl font-mono text-xs space-y-2 shadow-inner">
+        <div class="text-center border-b border-dashed border-gray-400 pb-2">
+          <h2 class="font-bold text-sm tracking-wider" id="strukNamaToko">TOKO KELONTONG</h2>
+          <p class="text-[10px] text-gray-600" id="strukWaktuTx">-</p>
+        </div>
+
+        <div id="strukItemDetails" class="space-y-1 py-2 border-b border-dashed border-gray-400">
+        </div>
+
+        <div class="space-y-1 text-[11px] pt-1">
+          <div class="flex justify-between font-bold"><span>TOTAL</span><span id="strukTotal">Rp 0</span></div>
+          <div class="flex justify-between"><span>TUNAI</span><span id="strukTunai">Rp 0</span></div>
+          <div class="flex justify-between"><span>KEMBALI</span><span id="strukKembali">Rp 0</span></div>
+        </div>
+
+        <div class="text-center pt-3 text-[10px] text-gray-500 border-t border-dashed border-gray-400">
+          Terima Kasih Telah Berbelanja!
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="eksekusiCetakStruk()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl transition text-xs">
+          🖨️ Cetak / Simpan PDF
+        </button>
+        <button onclick="tutupModalStruk()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-4 py-2 rounded-xl text-xs">
+          Tutup
+        </button>
+      </div>
     </div>
   </div>
 
@@ -266,6 +333,8 @@
       }
 
       document.getElementById('namaTokoDisplay').innerText = localStorage.getItem('namaToko') || 'Toko Saya';
+      document.getElementById('tglMasukBarang').valueAsDate = new Date();
+      
       renderListBarang();
       updateSelectBarang();
       tampilLaporan('harian');
@@ -318,9 +387,13 @@
     function tutupModalInputBarang() {
       document.getElementById('modalInputBarang').classList.add('hidden');
     }
+    function tutupModalStruk() {
+      document.getElementById('modalStruk').classList.add('hidden');
+    }
 
     function tambahBarang(e) {
       e.preventDefault();
+      const tanggalMasuk = document.getElementById('tglMasukBarang').value || new Date().toISOString().split('T')[0];
       const kode = document.getElementById('kodeBarang').value;
       const nama = document.getElementById('namaBarang').value;
       const kategori = document.getElementById('kategoriBarang').value;
@@ -328,11 +401,12 @@
       const jual = parseFloat(document.getElementById('hargaJual').value) || 0;
       const stok = parseInt(document.getElementById('stokBarang').value) || 0;
 
-      const itemBaru = { id: Date.now(), kode, nama, kategori, beli, jual, laba: jual - beli, stok };
+      const itemBaru = { id: Date.now(), tanggalMasuk, kode, nama, kategori, beli, jual, laba: jual - beli, stok };
       dataBarang.push(itemBaru);
       
       simpanDanRender();
       document.getElementById('formBarang').reset();
+      document.getElementById('tglMasukBarang').valueAsDate = new Date();
       tutupModalInputBarang();
     }
 
@@ -354,20 +428,22 @@
       document.getElementById('badgeTotalStok').innerText = dataBarang.length + " Item";
 
       if (dataBarang.length === 0) {
-        body.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Belum ada barang.</td></tr>`;
+        body.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 print:text-black">Belum ada barang.</td></tr>`;
         return;
       }
 
       body.innerHTML = dataBarang.map(item => {
         if (!item) return '';
         const jualVal = (item.jual || 0).toLocaleString();
+        const tgl = item.tanggalMasuk || '-';
         return `
-          <tr class="hover:bg-slate-800/50">
-            <td class="p-2 font-mono text-slate-400">${item.kode || '-'}</td>
-            <td class="p-2 font-semibold text-slate-100">${item.nama || '-'}</td>
-            <td class="p-2"><span class="bg-slate-800 px-2 py-0.5 rounded ${item.stok <= 5 ? 'text-rose-400 font-bold' : 'text-emerald-400'}">${item.stok || 0}</span></td>
+          <tr class="hover:bg-slate-800/50 print:hover:bg-transparent">
+            <td class="p-2 text-slate-400 print:text-black font-mono text-[10px]">${tgl}</td>
+            <td class="p-2 font-mono text-slate-400 print:text-black">${item.kode || '-'}</td>
+            <td class="p-2 font-semibold text-slate-100 print:text-black">${item.nama || '-'}</td>
+            <td class="p-2"><span class="bg-slate-800 print:bg-transparent px-2 py-0.5 rounded ${item.stok <= 5 ? 'text-rose-400 font-bold print:text-black' : 'text-emerald-400 print:text-black'}">${item.stok || 0}</span></td>
             <td class="p-2">Rp ${jualVal}</td>
-            <td class="p-2 owner-only ${isOwner ? '' : 'hidden'}">
+            <td class="p-2 owner-only print:hidden ${isOwner ? '' : 'hidden'}">
               <button onclick="hapusBarang(${item.id})" class="text-rose-400 hover:text-rose-300">🗑️</button>
             </td>
           </tr>
@@ -467,8 +543,8 @@
       }
 
       const uangKembali = uangDibayar - totalOmset;
-
       const now = new Date();
+      const wktStr = now.toLocaleString('id-ID');
       const tglStr = now.toISOString().split('T')[0];
       const blnStr = tglStr.substring(0, 7);
       const thnStr = tglStr.substring(0, 4);
@@ -477,14 +553,12 @@
 
       keranjang.forEach(k => {
         totalHpp += (k.beli || 0) * k.qty;
-
-        // Potong stok real-time
         const barangAsli = dataBarang.find(b => b && b.id === k.id);
         if (barangAsli) { barangAsli.stok -= k.qty; }
       });
 
       dataTransaksi.push({
-        id: Date.now(), tanggal: tglStr, bulan: blnStr, tahun: thnStr,
+        id: Date.now(), tanggal: tglStr, waktuFull: wktStr, bulan: blnStr, tahun: thnStr,
         omset: totalOmset, hpp: totalHpp, laba: totalOmset - totalHpp,
         dibayar: uangDibayar, kembali: uangKembali
       });
@@ -492,25 +566,42 @@
       localStorage.setItem('dataTransaksi', JSON.stringify(dataTransaksi));
       simpanDanRender();
 
+      // Render Struk ke Modal
       const namaToko = localStorage.getItem('namaToko') || 'Toko Kelontong';
-      let struk = `================================\n       ${namaToko.toUpperCase()}\n================================\n`;
-      keranjang.forEach(k => {
-        const hargaJual = k.jual || 0;
-        struk += `${k.qty}x ${k.nama}\n   Rp ${hargaJual.toLocaleString()} = Rp ${(hargaJual * k.qty).toLocaleString()}\n`;
-      });
-      struk += `--------------------------------\n`;
-      struk += `TOTAL    : Rp ${totalOmset.toLocaleString()}\n`;
-      struk += `TUNAI    : Rp ${uangDibayar.toLocaleString()}\n`;
-      struk += `KEMBALI  : Rp ${uangKembali.toLocaleString()}\n`;
-      struk += `================================\nTerima kasih telah berbelanja!`;
-
-      alert(struk);
+      document.getElementById('strukNamaToko').innerText = namaToko.toUpperCase();
+      document.getElementById('strukWaktuTx').innerText = wktStr;
       
+      const itemContainer = document.getElementById('strukItemDetails');
+      itemContainer.innerHTML = keranjang.map(k => `
+        <div class="flex justify-between text-[11px]">
+          <span>${k.nama} x${k.qty}</span>
+          <span>Rp ${((k.jual || 0) * k.qty).toLocaleString()}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('strukTotal').innerText = `Rp ${totalOmset.toLocaleString()}`;
+      document.getElementById('strukTunai').innerText = `Rp ${uangDibayar.toLocaleString()}`;
+      document.getElementById('strukKembali').innerText = `Rp ${uangKembali.toLocaleString()}`;
+
+      // Buka Modal Struk
+      document.getElementById('modalStruk').classList.remove('hidden');
+
       // Reset State Kasir
       keranjang = [];
       document.getElementById('uangDibayarKasir').value = '';
       renderKeranjang();
       tampilLaporan('harian');
+    }
+
+    function eksekusiCetakStruk() {
+      window.print();
+    }
+
+    function cetakStokPDF() {
+      const namaToko = localStorage.getItem('namaToko') || 'Toko Kelontong';
+      document.getElementById('namaTokoStokPrint').innerText = `LAPORAN STOK BARANG - ${namaToko.toUpperCase()}`;
+      document.getElementById('tglStokPrint').innerText = `Cetak Tanggal: ${new Date().toLocaleString('id-ID')}`;
+      window.print();
     }
 
     function tampilLaporan(tipe) {
