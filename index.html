@@ -76,9 +76,22 @@
         <p class="text-slate-500 text-center py-2">Keranjang masih kosong.</p>
       </div>
 
-      <div class="flex justify-between items-center pt-2 font-bold text-sm">
-        <span>Total:</span>
-        <span class="text-emerald-400" id="totalBayarDisplay">Rp 0</span>
+      <!-- Area Kalkulasi Total & Input Uang Pembayaran -->
+      <div class="pt-2 border-t border-slate-800 space-y-2 text-xs">
+        <div class="flex justify-between items-center font-bold text-sm">
+          <span>Total:</span>
+          <span class="text-emerald-400" id="totalBayarDisplay">Rp 0</span>
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400">Uang Dibayarkan (Rp):</label>
+          <input type="number" id="uangDibayarKasir" placeholder="0" oninput="hitungKembalianRealtime()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 outline-none text-slate-200 font-bold mt-1">
+        </div>
+
+        <div class="flex justify-between items-center font-bold text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+          <span>Kembalian:</span>
+          <span class="text-amber-400" id="uangKembaliDisplay">Rp 0</span>
+        </div>
       </div>
 
       <button onclick="prosesBayar()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl transition">
@@ -218,8 +231,23 @@
   </div>
 
   <script>
-    let dataBarang = JSON.parse(localStorage.getItem('dataBarang')) || [];
-    let dataTransaksi = JSON.parse(localStorage.getItem('dataTransaksi')) || [];
+    let dataBarang = [];
+    let dataTransaksi = [];
+
+    try {
+      dataBarang = JSON.parse(localStorage.getItem('dataBarang')) || [];
+    } catch (e) {
+      console.error("Gagal parsing dataBarang:", e);
+      dataBarang = [];
+    }
+
+    try {
+      dataTransaksi = JSON.parse(localStorage.getItem('dataTransaksi')) || [];
+    } catch (e) {
+      console.error("Gagal parsing dataTransaksi:", e);
+      dataTransaksi = [];
+    }
+
     let keranjang = [];
     let isOwner = false;
 
@@ -237,7 +265,7 @@
         localStorage.setItem('pinOwner', pin || "1234");
       }
 
-      document.getElementById('namaTokoDisplay').innerText = localStorage.getItem('namaToko');
+      document.getElementById('namaTokoDisplay').innerText = localStorage.getItem('namaToko') || 'Toko Saya';
       renderListBarang();
       updateSelectBarang();
       tampilLaporan('harian');
@@ -245,11 +273,9 @@
 
     function switchRole() {
       if (isOwner) {
-        // Switch back to Kasir
         isOwner = false;
         applyRoleUI();
       } else {
-        // Auth PIN
         const pinInput = prompt("Masukkan PIN Pemilik (Owner):");
         const pinOri = localStorage.getItem('pinOwner');
         if (pinInput === pinOri) {
@@ -298,9 +324,9 @@
       const kode = document.getElementById('kodeBarang').value;
       const nama = document.getElementById('namaBarang').value;
       const kategori = document.getElementById('kategoriBarang').value;
-      const beli = parseFloat(document.getElementById('hargaBeli').value);
-      const jual = parseFloat(document.getElementById('hargaJual').value);
-      const stok = parseInt(document.getElementById('stokBarang').value);
+      const beli = parseFloat(document.getElementById('hargaBeli').value) || 0;
+      const jual = parseFloat(document.getElementById('hargaJual').value) || 0;
+      const stok = parseInt(document.getElementById('stokBarang').value) || 0;
 
       const itemBaru = { id: Date.now(), kode, nama, kategori, beli, jual, laba: jual - beli, stok };
       dataBarang.push(itemBaru);
@@ -312,7 +338,7 @@
 
     function hapusBarang(id) {
       if (confirm("Hapus barang dari stok?")) {
-        dataBarang = dataBarang.filter(item => item.id !== id);
+        dataBarang = dataBarang.filter(item => item && item.id !== id);
         simpanDanRender();
       }
     }
@@ -332,17 +358,21 @@
         return;
       }
 
-      body.innerHTML = dataBarang.map(item => `
-        <tr class="hover:bg-slate-800/50">
-          <td class="p-2 font-mono text-slate-400">${item.kode}</td>
-          <td class="p-2 font-semibold text-slate-100">${item.nama}</td>
-          <td class="p-2"><span class="bg-slate-800 px-2 py-0.5 rounded ${item.stok <= 5 ? 'text-rose-400 font-bold' : 'text-emerald-400'}">${item.stok}</span></td>
-          <td class="p-2">Rp ${item.jual.toLocaleString()}</td>
-          <td class="p-2 owner-only ${isOwner ? '' : 'hidden'}">
-            <button onclick="hapusBarang(${item.id})" class="text-rose-400 hover:text-rose-300">🗑️</button>
-          </td>
-        </tr>
-      `).join('');
+      body.innerHTML = dataBarang.map(item => {
+        if (!item) return '';
+        const jualVal = (item.jual || 0).toLocaleString();
+        return `
+          <tr class="hover:bg-slate-800/50">
+            <td class="p-2 font-mono text-slate-400">${item.kode || '-'}</td>
+            <td class="p-2 font-semibold text-slate-100">${item.nama || '-'}</td>
+            <td class="p-2"><span class="bg-slate-800 px-2 py-0.5 rounded ${item.stok <= 5 ? 'text-rose-400 font-bold' : 'text-emerald-400'}">${item.stok || 0}</span></td>
+            <td class="p-2">Rp ${jualVal}</td>
+            <td class="p-2 owner-only ${isOwner ? '' : 'hidden'}">
+              <button onclick="hapusBarang(${item.id})" class="text-rose-400 hover:text-rose-300">🗑️</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function updateSelectBarang() {
@@ -351,13 +381,22 @@
         select.innerHTML = `<option value="">-- Belum Ada Barang --</option>`;
         return;
       }
-      select.innerHTML = dataBarang.map(b => `<option value="${b.id}">${b.nama} (Stok: ${b.stok}) - Rp ${b.jual.toLocaleString()}</option>`).join('');
+      select.innerHTML = dataBarang.map(b => {
+        if (!b) return '';
+        const jualVal = (b.jual || 0).toLocaleString();
+        return `<option value="${b.id}">${b.nama} (Stok: ${b.stok || 0}) - Rp ${jualVal}</option>`;
+      }).join('');
     }
 
     function tambahKeKeranjang() {
-      const id = parseInt(document.getElementById('pilihBarangKasir').value);
-      const qty = parseInt(document.getElementById('qtyKasir').value);
-      const item = dataBarang.find(b => b.id === id);
+      const selectEl = document.getElementById('pilihBarangKasir');
+      if (!selectEl.value) return;
+
+      const id = parseInt(selectEl.value);
+      const qtyInput = parseInt(document.getElementById('qtyKasir').value);
+      const qty = isNaN(qtyInput) || qtyInput < 1 ? 1 : qtyInput;
+      
+      const item = dataBarang.find(b => b && b.id === id);
 
       if (!item) return;
       if (qty > item.stok) { alert("Stok barang tidak mencukupi!"); return; }
@@ -372,19 +411,39 @@
       renderKeranjang();
     }
 
+    function hitungTotalKeranjang() {
+      return keranjang.reduce((acc, k) => acc + ((k.jual || 0) * k.qty), 0);
+    }
+
+    function hitungKembalianRealtime() {
+      const total = hitungTotalKeranjang();
+      const dibayar = parseFloat(document.getElementById('uangDibayarKasir').value) || 0;
+      const kembali = dibayar - total;
+
+      const kembaliEl = document.getElementById('uangKembaliDisplay');
+      if (kembali < 0) {
+        kembaliEl.innerText = `Rp 0 (Kurang Rp ${Math.abs(kembali).toLocaleString()})`;
+        kembaliEl.className = "text-rose-400 font-bold";
+      } else {
+        kembaliEl.innerText = `Rp ${kembali.toLocaleString()}`;
+        kembaliEl.className = "text-amber-400 font-bold";
+      }
+    }
+
     function renderKeranjang() {
       const list = document.getElementById('listKeranjang');
-      let total = 0;
+      const total = hitungTotalKeranjang();
 
       if (keranjang.length === 0) {
         list.innerHTML = `<p class="text-slate-500 text-center py-2">Keranjang masih kosong.</p>`;
         document.getElementById('totalBayarDisplay').innerText = 'Rp 0';
+        document.getElementById('uangKembaliDisplay').innerText = 'Rp 0';
+        document.getElementById('uangKembaliDisplay').className = 'text-amber-400 font-bold';
         return;
       }
 
       list.innerHTML = keranjang.map(k => {
-        const subtotal = k.jual * k.qty;
-        total += subtotal;
+        const subtotal = (k.jual || 0) * k.qty;
         return `
           <div class="flex justify-between items-center bg-slate-950 p-2 rounded-lg">
             <span>${k.nama} x${k.qty}</span>
@@ -393,31 +452,41 @@
       }).join('');
 
       document.getElementById('totalBayarDisplay').innerText = `Rp ${total.toLocaleString()}`;
+      hitungKembalianRealtime();
     }
 
     function prosesBayar() {
       if (keranjang.length === 0) { alert("Keranjang kosong!"); return; }
+
+      const totalOmset = hitungTotalKeranjang();
+      const uangDibayar = parseFloat(document.getElementById('uangDibayarKasir').value) || 0;
+
+      if (uangDibayar < totalOmset) {
+        alert(`Uang pembayaran kurang! Total: Rp ${totalOmset.toLocaleString()}, Dibayar: Rp ${uangDibayar.toLocaleString()}`);
+        return;
+      }
+
+      const uangKembali = uangDibayar - totalOmset;
 
       const now = new Date();
       const tglStr = now.toISOString().split('T')[0];
       const blnStr = tglStr.substring(0, 7);
       const thnStr = tglStr.substring(0, 4);
 
-      let totalOmset = 0;
       let totalHpp = 0;
 
       keranjang.forEach(k => {
-        totalOmset += k.jual * k.qty;
-        totalHpp += k.beli * k.qty;
+        totalHpp += (k.beli || 0) * k.qty;
 
         // Potong stok real-time
-        const barangAsli = dataBarang.find(b => b.id === k.id);
+        const barangAsli = dataBarang.find(b => b && b.id === k.id);
         if (barangAsli) { barangAsli.stok -= k.qty; }
       });
 
       dataTransaksi.push({
         id: Date.now(), tanggal: tglStr, bulan: blnStr, tahun: thnStr,
-        omset: totalOmset, hpp: totalHpp, laba: totalOmset - totalHpp
+        omset: totalOmset, hpp: totalHpp, laba: totalOmset - totalHpp,
+        dibayar: uangDibayar, kembali: uangKembali
       });
 
       localStorage.setItem('dataTransaksi', JSON.stringify(dataTransaksi));
@@ -426,12 +495,20 @@
       const namaToko = localStorage.getItem('namaToko') || 'Toko Kelontong';
       let struk = `================================\n       ${namaToko.toUpperCase()}\n================================\n`;
       keranjang.forEach(k => {
-        struk += `${k.qty}x ${k.nama}\n   Rp ${k.jual.toLocaleString()} = Rp ${(k.jual * k.qty).toLocaleString()}\n`;
+        const hargaJual = k.jual || 0;
+        struk += `${k.qty}x ${k.nama}\n   Rp ${hargaJual.toLocaleString()} = Rp ${(hargaJual * k.qty).toLocaleString()}\n`;
       });
-      struk += `--------------------------------\nTOTAL : Rp ${totalOmset.toLocaleString()}\n================================\nTerima kasih telah berbelanja!`;
+      struk += `--------------------------------\n`;
+      struk += `TOTAL    : Rp ${totalOmset.toLocaleString()}\n`;
+      struk += `TUNAI    : Rp ${uangDibayar.toLocaleString()}\n`;
+      struk += `KEMBALI  : Rp ${uangKembali.toLocaleString()}\n`;
+      struk += `================================\nTerima kasih telah berbelanja!`;
 
       alert(struk);
+      
+      // Reset State Kasir
       keranjang = [];
+      document.getElementById('uangDibayarKasir').value = '';
       renderKeranjang();
       tampilLaporan('harian');
     }
@@ -442,12 +519,12 @@
       const thn = skrg.substring(0, 4);
 
       let filtered = [];
-      if (tipe === 'harian') filtered = dataTransaksi.filter(t => t.tanggal === skrg);
-      else if (tipe === 'bulanan') filtered = dataTransaksi.filter(t => t.bulan === bln);
-      else if (tipe === 'tahunan') filtered = dataTransaksi.filter(t => t.tahun === thn);
+      if (tipe === 'harian') filtered = dataTransaksi.filter(t => t && t.tanggal === skrg);
+      else if (tipe === 'bulanan') filtered = dataTransaksi.filter(t => t && t.bulan === bln);
+      else if (tipe === 'tahunan') filtered = dataTransaksi.filter(t => t && t.tahun === thn);
 
-      const totalOmset = filtered.reduce((acc, curr) => acc + curr.omset, 0);
-      const totalHpp = filtered.reduce((acc, curr) => acc + curr.hpp, 0);
+      const totalOmset = filtered.reduce((acc, curr) => acc + (curr.omset || 0), 0);
+      const totalHpp = filtered.reduce((acc, curr) => acc + (curr.hpp || 0), 0);
 
       document.getElementById('lapOmset').innerText = "Rp " + totalOmset.toLocaleString();
       document.getElementById('lapHpp').innerText = "Rp " + totalHpp.toLocaleString();
@@ -457,7 +534,7 @@
     function hitungZakat() {
       const kas = parseFloat(document.getElementById('kasToko').value) || 0;
       const utang = parseFloat(document.getElementById('utangToko').value) || 0;
-      const nilaiBarang = dataBarang.reduce((acc, item) => acc + (item.beli * item.stok), 0);
+      const nilaiBarang = dataBarang.reduce((acc, item) => acc + ((item.beli || 0) * (item.stok || 0)), 0);
       const bersih = (nilaiBarang + kas) - utang;
       const hargaEmas85g = 85 * 1300000;
       const wajibZakat = bersih >= hargaEmas85g;
